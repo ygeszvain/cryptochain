@@ -57,7 +57,7 @@ app.post('/api/mine', (req, res) => {
 
   pubsub.broadcastChain();
 
-  res.redirect('/api/blocks');
+  res.json(blockchain.chain);
 });
 
 app.post('/api/transact', (req, res) => {
@@ -94,7 +94,7 @@ app.get('/api/transaction-pool-map', (req, res) => {
 app.get('/api/mine-transactions', (req, res) => {
   transactionMiner.mineTransactions();
 
-  res.redirect('/api/blocks');
+  res.json(blockchain.chain);
 });
 
 app.get('/api/wallet-info', (req, res) => {
