@@ -51,13 +51,13 @@ const CHANNELS = {
 }
 
 class PubSub {
-    constructor({blockchain, transactionPool, wallet}) {
+    constructor({blockchain, transactionPool, redisUrl}) {
         this.blockchain = blockchain
         this.transactionPool = transactionPool
         this.wallet = wallet
 
-        this.publisher = redis.createClient()
-        this.subscriber = redis.createClient()
+        this.publisher = redis.createClient(redisUrl)
+        this.subscriber = redis.createClient(redisUrl)
 
         this.subscribeToChannels()
 
@@ -68,25 +68,21 @@ class PubSub {
         console.log(`Message received. Channel: ${channel}. Message: ${message}.`)
         const parsedMessage = JSON.parse(message)
 
-        switch (channel){
+        switch(channel) {
             case CHANNELS.BLOCKCHAIN:
-                this.blockchain.replaceChain(parsedMessage, ture, ()=>{
-                    this.transactionPool.clearBlockchainTransactions({
-                        chain: parsedMessage
-                    })
-                })
-                break
+              this.blockchain.replaceChain(parsedMessage, true, () => {
+                this.transactionPool.clearBlockchainTransactions({
+                  chain: parsedMessage
+                });
+              });
+              break;
             case CHANNELS.TRANSACTION:
-                if (!this.transactionPool.existingTransaction({
-                    inputAddress: this.wallet.publicKey
-                })) {
-                    this.transactionPool.setTransaction(parsedMessage)
-                }                
-                break
+              this.transactionPool.setTransaction(parsedMessage);
+              break;
             default:
-                return
+              return;
+          }
         }
-    }
 
     subscribeToChannels(){
         Object.values(CHANNELS).forEach(channel=>{
